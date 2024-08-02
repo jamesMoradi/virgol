@@ -1,6 +1,6 @@
 import { BaseEntity } from "src/common/abstract/base.entity";
-import { EntityNames } from "src/common/types/entity.enum";
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { EntityNames } from "src/common/types/enums/entity.enum";
+import { Column, Entity, UpdateDateColumn } from "typeorm";
 
 @Entity(EntityNames.User)
 export class UserEntity extends BaseEntity {

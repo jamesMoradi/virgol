@@ -13,8 +13,8 @@ import { AuthModule } from './modules/auth/auth.module';
       envFilePath : join(process.cwd(), '.env')
     }),
     TypeOrmModule.forRoot(TypeOrmConfig()),
+    AuthModule,
     UserModule,
-    AuthModule
   ]
 })
 export class AppModule {}

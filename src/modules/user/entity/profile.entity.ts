@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/common/abstract/base.entity";
-import { EntityNames } from "src/common/types/entity.enum";
+import { EntityNames } from "src/common/types/enums/entity.enum";
 import { Column, Entity } from "typeorm";
 
 @Entity(EntityNames.Profile)
