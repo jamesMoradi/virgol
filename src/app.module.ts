@@ -3,7 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { TypeOrmConfig } from './config/typeorm.config';
-import { UserModule } from './modules/user/user/user.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { UserModule } from './modules/user/user/user.module';
       envFilePath : join(process.cwd(), '.env')
     }),
     TypeOrmModule.forRoot(TypeOrmConfig()),
-    UserModule
+    UserModule,
+    AuthModule
   ]
 })
 export class AppModule {}

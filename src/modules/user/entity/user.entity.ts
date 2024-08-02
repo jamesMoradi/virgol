@@ -10,6 +10,9 @@ export class UserEntity extends BaseEntity {
     @Column({unique : true})
     phone : string
 
+    @Column()
+    password : string
+
     @Column({unique : true})
     email : string
 
