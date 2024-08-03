@@ -10,7 +10,7 @@ import { ProfileEntity } from '../user/entity/profile.entity';
 import { AuthMessage, BadRequestMessage, PublicMessage } from 'src/common/types/enums/message.enum';
 import { OtpEntity } from '../user/entity/otp.entity';
 import { randomInt } from 'crypto';
-import { TokenServices } from './token.services';
+import { TokenServices } from './token.service';
 import { Request, Response } from 'express';
 import { CookieKeys } from 'src/common/types/enums/cookie.enum';
 import { Result } from './types/result';
@@ -90,6 +90,14 @@ export class AuthService {
         }
     }
 
+    async validateAccessToken(token:string) {
+        const {userId} = this.tokenService.verifyAccessToken(token)
+        const user = await this.userRepository.findOneBy({id : userId})
+        if (!user) throw new UnauthorizedException(AuthMessage.TryAgain)
+
+        return user
+    }
+
     private async sendResponse(res : Response, result : Result) {
         const {token, code} = result
         res.cookie(CookieKeys.Otp, token, {httpOnly : true, expires : new Date(Date.now() + (1000 * 120))})
@@ -98,7 +106,7 @@ export class AuthService {
         })
     }
 
-    public async checkOtp(code : string){
+    async checkOtp(code : string){
         const token = this.request.cookies?.[CookieKeys.Otp]
         if (!token) throw new UnauthorizedException(AuthMessage.ExpiredCode)
 
