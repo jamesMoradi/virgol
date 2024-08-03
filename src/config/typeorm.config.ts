@@ -10,8 +10,8 @@ export const TypeOrmConfig = () : TypeOrmModuleOptions => {
         database : DB_NAME,
         username : DB_USERNAME,
         password : DB_PASSWORD,
-        autoLoadEntities : false,
-        synchronize : false,
+        autoLoadEntities : true,
+        synchronize : true,
         entities : []
     }
 }
