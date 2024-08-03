@@ -5,7 +5,10 @@ export enum BadRequestMessage {
 
 export enum AuthMessage {
     NotFoundAccount="account did not found",
-    AlreadyExistAccount="username already exists"
+    AlreadyExistAccount="username already exists",
+    ExpiredCode="code is expired. try again later",
+    TryAgain="plesae try again in another time",
+    NotTrueCode="code is not true"
 }
 
 export enum NotFoundMessage {
@@ -14,4 +17,9 @@ export enum NotFoundMessage {
 
 export enum ValidationMessage {
 
+}
+
+export enum PublicMessage {
+    CodeSent="code sent succesfully",
+    LoggedIn="welcome"
 }

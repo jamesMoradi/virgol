@@ -18,3 +18,10 @@ export class AuthDto {
     @ApiProperty()
     method : AuthMethod
 }
+
+export class CheckOtp {
+    @ApiProperty()
+    @IsString()
+    @Length(5,5)
+    code : string
+}

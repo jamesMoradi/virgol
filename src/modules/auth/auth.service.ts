@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, Scope, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { AuthType } from './enums/type.enum';
 import { AuthMethod } from './enums/method.enum';
@@ -7,11 +7,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../user/entity/user.entity';
 import { ProfileEntity } from '../user/entity/profile.entity';
-import { AuthMessage, BadRequestMessage } from 'src/common/types/enums/message.enum';
+import { AuthMessage, BadRequestMessage, PublicMessage } from 'src/common/types/enums/message.enum';
 import { OtpEntity } from '../user/entity/otp.entity';
 import { randomInt } from 'crypto';
+import { TokenServices } from './token.services';
+import { Request, Response } from 'express';
+import { CookieKeys } from 'src/common/types/enums/cookie.enum';
+import { Result } from './types/result';
+import { REQUEST } from '@nestjs/core';
 
-@Injectable()
+@Injectable({scope : Scope.REQUEST})
 export class AuthService {
     constructor(
         @InjectRepository(UserEntity)
@@ -21,18 +26,25 @@ export class AuthService {
         private readonly profileRepository : Repository<ProfileEntity>,
 
         @InjectRepository(OtpEntity)
-        private readonly otpRepository : Repository<OtpEntity>
+        private readonly otpRepository : Repository<OtpEntity>,
+
+        private readonly tokenService : TokenServices,
+
+        @Inject(REQUEST) 
+        private  readonly request : Request 
     ){}
 
-    userExistence(authDto : AuthDto){
+    async userExistence(authDto : AuthDto, res : Response){
         const {method, type, username} = authDto
-        
+        let result:Result;
         switch (type) {
             case AuthType.Login:
-                return this.login(method, username)
-        
+                result = await this.login(method, username)
+                return this.sendResponse(res, result)
+
             case AuthType.Register:
-                return this.register(method, username)
+                result = await this.register(method, username)
+                return this.sendResponse(res, result)
 
             default:
                 throw new UnauthorizedException()
@@ -41,18 +53,15 @@ export class AuthService {
 
     async login(method : AuthMethod, username : string){
         const validUser = this.usernameValidator(method, username)
-        console.log('user is valid');
-        
         const user:UserEntity = await this.checkExistence(method, validUser)
-        if (!user) throw new UnauthorizedException(AuthMessage.NotFoundAccount)
-        console.log('user founded');
-       
+        if (!user) throw new UnauthorizedException(AuthMessage.NotFoundAccount)       
         const otp = await this.saveOtp(user.id)
-        console.log('otp saved');
         
+        const token = this.tokenService.createOtpToken({userId : user.id})
 
         return {
-            code : otp.code
+            code : otp.code,
+            token,
         }
     }
 
@@ -73,12 +82,42 @@ export class AuthService {
         user = await this.userRepository.save(user)
         
         const otp = await this.saveOtp(user.id)
+        const token = this.tokenService.createOtpToken({userId : user.id})
+
         return {
+            token : token,
             code : otp.code
         }
     }
 
-    private async checkOtp(){}
+    private async sendResponse(res : Response, result : Result) {
+        const {token, code} = result
+        res.cookie(CookieKeys.Otp, token, {httpOnly : true, expires : new Date(Date.now() + (1000 * 120))})
+        res.json({
+            code : code
+        })
+    }
+
+    public async checkOtp(code : string){
+        const token = this.request.cookies?.[CookieKeys.Otp]
+        if (!token) throw new UnauthorizedException(AuthMessage.ExpiredCode)
+
+        const {userId} = this.tokenService.verifyOtpToken(token)
+        const otp = await this.otpRepository.findOneBy({userId})
+        if (!otp) throw new UnauthorizedException(AuthMessage.TryAgain)
+        
+        const now = new Date()
+        if (otp.expiresIn < now) throw new UnauthorizedException(AuthMessage.ExpiredCode)
+        if (otp.code !== code) throw new UnauthorizedException(AuthMessage.NotTrueCode)
+        
+        const accesToken = this.tokenService.createAccessToken({userId})
+
+        return {
+            message : PublicMessage.LoggedIn,
+            accesToken
+        }
+        
+    }
     
     private async saveOtp(userId : number){
         const code = randomInt(10000, 99999).toString()
