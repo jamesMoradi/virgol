@@ -18,7 +18,7 @@ export enum NotFoundMessage {
 }
 
 export enum ValidationMessage {
-
+    InvalidImageFormat="image format ust be jpg, png or jpeg"
 }
 
 export enum PublicMessage {

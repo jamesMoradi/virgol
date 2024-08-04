@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConflictMessage, NotFoundMessage, PublicMessage } from 'src/common/types/enums/message.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.utils';
+import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
 
 @Injectable()
 export class CategoryService {

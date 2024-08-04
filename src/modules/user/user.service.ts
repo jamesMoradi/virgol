@@ -1,4 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
+import { ProfileDto } from './dto/profile.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from './entity/user.entity';
+import { Repository } from 'typeorm';
+import { ProfileEntity } from './entity/profile.entity';
+import { Request } from 'express';
+import { REQUEST } from '@nestjs/core';
+import { isDate } from 'class-validator';
+import { Gender } from './enum/gender.enum';
 
-@Injectable()
-export class UserService {}
+@Injectable({scope : Scope.REQUEST})
+export class UserService {
+    constructor(
+        @InjectRepository(UserEntity)
+        private readonly userRepository : Repository<UserEntity>,
+
+        @InjectRepository(ProfileEntity)
+        private readonly profileRepository : Repository<ProfileEntity>,
+
+        @Inject(REQUEST) private readonly req : Request
+    ){}
+
+    async changeProfile(files : any, ProfileDto : ProfileDto) {
+        if (files.profile_image.length > 0) {
+            let [image] = files.profile_image
+            ProfileDto.profile_image = image.path
+        }
+
+        if(files.bg_image.length > 0) {
+            let [image] = files.bg_image
+            ProfileDto.bg_image = image.path
+        }
+
+
+        const {id : userId, profileId} = this.req.user
+        const {bio,birthday,gender,linkedin_profile,nick_name,x_profile, bg_image, profile_image} = ProfileDto
+        let profile = await this.profileRepository.findOneBy({userId})
+        if (profile) {
+            if (bio) profile.bio = bio
+            if (birthday && isDate(new Date(birthday))) profile.birthday = new Date(birthday)
+            if (x_profile) profile.x_profile = x_profile
+            if (linkedin_profile) profile.linkedin_profile = linkedin_profile
+            if (gender && Object.values(Gender as any).includes(gender)) profile.gender = gender 
+            if (profile_image) profile.profile_image = profile_image
+            if (bg_image) profile.bg_image = bg_image
+        } else {
+            profile = this.profileRepository.create({
+                bio,
+                birthday, 
+                gender,
+                linkedin_profile,
+                nick_name,
+                x_profile,
+                userId,
+                bg_image,
+                profile_image
+            })
+        }
+
+        profile = await this.profileRepository.save(profile)
+        if (!profileId) await this.userRepository.update({id : userId}, {profileId : profile.id})
+    }
+}
