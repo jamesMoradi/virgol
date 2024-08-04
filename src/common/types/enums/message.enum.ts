@@ -12,7 +12,9 @@ export enum AuthMessage {
 }
 
 export enum NotFoundMessage {
-
+    NotFoundCategory="category not found",
+    NotFoundPost="post not found",
+    NotFoundUser="user not found",
 }
 
 export enum ValidationMessage {
@@ -22,7 +24,10 @@ export enum ValidationMessage {
 export enum PublicMessage {
     CodeSent="code sent succesfully",
     LoggedIn="welcome",
-    Created="craeted successfully"
+    Created="craeted successfully",
+    Deleted="deleted suuccessfully",
+    Updated="updated suuccessfully",
+    Inserted="inserted suuccessfully",
 }
 
 export enum ConflictMessage {
