@@ -21,5 +21,10 @@ export enum ValidationMessage {
 
 export enum PublicMessage {
     CodeSent="code sent succesfully",
-    LoggedIn="welcome"
+    LoggedIn="welcome",
+    Created="craeted successfully"
+}
+
+export enum ConflictMessage {
+    CategoryTitle="category title already exists"
 }

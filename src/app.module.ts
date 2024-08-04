@@ -5,16 +5,15 @@ import { join } from 'path';
 import { TypeOrmConfig } from './config/typeorm.config';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal : true,
-      envFilePath : join(process.cwd(), '.env')
-    }),
+    ConfigModule.forRoot({isGlobal : true,envFilePath : join(process.cwd(), '.env')}),
     TypeOrmModule.forRoot(TypeOrmConfig()),
     AuthModule,
     UserModule,
+    CategoryModule,
   ]
 })
 export class AppModule {}
