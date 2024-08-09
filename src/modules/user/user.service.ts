@@ -8,6 +8,7 @@ import { Request } from 'express';
 import { REQUEST } from '@nestjs/core';
 import { isDate } from 'class-validator';
 import { Gender } from './enum/gender.enum';
+import { ProfileImages } from './types/files';
 
 @Injectable({scope : Scope.REQUEST})
 export class UserService {
@@ -21,15 +22,15 @@ export class UserService {
         @Inject(REQUEST) private readonly req : Request
     ){}
 
-    async changeProfile(files : any, ProfileDto : ProfileDto) {
+    async changeProfile(files : ProfileImages, ProfileDto : ProfileDto) {
         if (files.profile_image.length > 0) {
             let [image] = files.profile_image
-            ProfileDto.profile_image = image.path
+            ProfileDto.profile_image = image.path.slice(7)
         }
 
         if(files.bg_image.length > 0) {
             let [image] = files.bg_image
-            ProfileDto.bg_image = image.path
+            ProfileDto.bg_image = image.path.slice(7)
         }
 
 
@@ -38,6 +39,7 @@ export class UserService {
         let profile = await this.profileRepository.findOneBy({userId})
         if (profile) {
             if (bio) profile.bio = bio
+            if (nick_name) profile.nick_name = nick_name
             if (birthday && isDate(new Date(birthday))) profile.birthday = new Date(birthday)
             if (x_profile) profile.x_profile = x_profile
             if (linkedin_profile) profile.linkedin_profile = linkedin_profile
@@ -60,5 +62,17 @@ export class UserService {
 
         profile = await this.profileRepository.save(profile)
         if (!profileId) await this.userRepository.update({id : userId}, {profileId : profile.id})
+        
+        return {
+            message : "data updated"
+        }
+    }
+
+    async getProfile(){
+        const {id} = this.req.user
+        return this.userRepository.findOne({
+            where : {id},
+            relations : ['profile']
+        })
     }
 }
