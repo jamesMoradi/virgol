@@ -12,11 +12,20 @@ export class UserEntity extends BaseEntity {
     @Column({unique : true})
     phone : string
 
+    @Column({nullable : true, default : false})
+    verifyPhone : boolean
+
     @Column({nullable : true})
     password : string
 
     @Column({unique : true, nullable : true})
     email : string
+
+    @Column({unique : true, nullable : true})
+    newEmail : string
+
+    @Column({nullable : true, default : false})
+    verifyEmail : boolean
 
     @UpdateDateColumn()
     updated_at : Date

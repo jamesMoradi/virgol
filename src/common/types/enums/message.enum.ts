@@ -1,6 +1,7 @@
 export enum BadRequestMessage {
     InvalidLoginData="sent data for login are not valid",
-    InvalidRegisterData="sent data for registeration are not valid"
+    InvalidRegisterData="sent data for registeration are not valid",
+    SomethingWentWrong="something went wrong. try again later"
 }
 
 export enum AuthMessage {
@@ -18,7 +19,9 @@ export enum NotFoundMessage {
 }
 
 export enum ValidationMessage {
-    InvalidImageFormat="image format ust be jpg, png or jpeg"
+    InvalidImageFormat="image format ust be jpg, png or jpeg",
+    InvalidEmail="invalid email format",
+    InvalidPhone="invalid phone format"
 }
 
 export enum PublicMessage {
@@ -31,5 +34,6 @@ export enum PublicMessage {
 }
 
 export enum ConflictMessage {
-    CategoryTitle="category title already exists"
+    CategoryTitle="category title already exists",
+    Email="this email is using by someone else"
 }

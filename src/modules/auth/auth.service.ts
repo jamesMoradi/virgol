@@ -15,6 +15,7 @@ import { Request, Response } from 'express';
 import { CookieKeys } from 'src/common/types/enums/cookie.enum';
 import { Result } from './types/result';
 import { REQUEST } from '@nestjs/core';
+import { tokenOption } from 'src/common/utils/cookie.util';
 
 @Injectable({scope : Scope.REQUEST})
 export class AuthService {
@@ -82,6 +83,8 @@ export class AuthService {
         user = await this.userRepository.save(user)
         
         const otp = await this.saveOtp(user.id)
+        otp.method = method
+        await this.otpRepository.save(otp)
         const token = this.tokenService.createOtpToken({userId : user.id})
 
         return {
@@ -100,7 +103,7 @@ export class AuthService {
 
     private async sendResponse(res : Response, result : Result) {
         const {token, code} = result
-        res.cookie(CookieKeys.Otp, token, {httpOnly : true, expires : new Date(Date.now() + (1000 * 120))})
+        res.cookie(CookieKeys.Otp, token, tokenOption())
         res.json({
             code : code
         })
@@ -120,6 +123,16 @@ export class AuthService {
         
         const accesToken = this.tokenService.createAccessToken({userId})
 
+        if (otp.method === AuthMethod.Email) {
+            await this.userRepository.update({id : userId}, {
+                verifyEmail : true
+            })
+        } else if (otp.method === AuthMethod.Email) {
+            await this.userRepository.update({id : userId}, {
+                verifyPhone : true
+            })
+        }
+
         return {
             message : PublicMessage.LoggedIn,
             accesToken
@@ -127,7 +140,7 @@ export class AuthService {
         
     }
     
-    private async saveOtp(userId : number){
+    async saveOtp(userId : number){
         const code = randomInt(10000, 99999).toString()
         const expiresIn = new Date(Date.now() + (1000 * 60 * 2))
         let otp = await this.otpRepository.findOneBy({userId})
