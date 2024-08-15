@@ -1,8 +1,10 @@
 import { BaseEntity } from "src/common/abstract/base.entity";
 import { EntityNames } from "src/common/types/enums/entity.enum";
-import { Column, Entity, JoinColumn, OneToOne, UpdateDateColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, UpdateDateColumn } from "typeorm";
 import { OtpEntity } from "./otp.entity";
 import { ProfileEntity } from "./profile.entity";
+import { BlogEntity } from "src/modules/blog/entity/blog.entity";
+import { BlogLikeEntity } from "src/modules/blog/entity/like.entity";
 
 @Entity(EntityNames.User)
 export class UserEntity extends BaseEntity {
@@ -49,5 +51,11 @@ export class UserEntity extends BaseEntity {
     @OneToOne(() => ProfileEntity, profile => profile.user, {nullable : true})
     @JoinColumn({name : "profileId"})
     profile : ProfileEntity
+
+    @OneToMany(() => BlogEntity, blog => blog.author)
+    blogs : BlogEntity[]
+
+    @OneToMany(() => BlogLikeEntity, like => like.user)
+    blogLikes : BlogLikeEntity[]
     
 }
