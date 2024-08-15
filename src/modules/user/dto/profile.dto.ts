@@ -3,8 +3,7 @@ import { IsEmail, IsEnum, isEnum, IsMobilePhone, IsOptional, IsString, Length } 
 import { Gender } from "../enum/gender.enum"
 import { ValidationMessage } from "src/common/types/enums/message.enum"
 
-export class ProfileDto {
-        
+export class ProfileDto {    
    @ApiPropertyOptional({nullable : true})
    @IsString()
    @IsOptional()
@@ -41,6 +40,7 @@ export class ChangeEmailDto {
    @IsEmail({},{message : ValidationMessage.InvalidEmail})
    email : string
 }
+
 export class ChangePhoneDto {
    @ApiProperty()
    @IsMobilePhone('fa-IR', {}, {message : ValidationMessage.InvalidPhone})

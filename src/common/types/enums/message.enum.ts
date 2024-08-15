@@ -16,6 +16,7 @@ export enum NotFoundMessage {
     NotFoundCategory="category not found",
     NotFoundPost="post not found",
     NotFoundUser="user not found",
+    NotFound="not found"
 }
 
 export enum ValidationMessage {
@@ -35,5 +36,6 @@ export enum PublicMessage {
 
 export enum ConflictMessage {
     CategoryTitle="category title already exists",
-    Email="this email is using by someone else"
+    Email="this email is using by someone else",
+    Phone="this phone number is using by someone else"
 }

@@ -12,6 +12,9 @@ export class UserEntity extends BaseEntity {
     @Column({unique : true})
     phone : string
 
+    @Column({unique : true, nullable : true})
+    newPhone : string
+
     @Column({nullable : true, default : false})
     verifyPhone : boolean
 

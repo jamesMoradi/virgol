@@ -19,7 +19,7 @@ export class AuthDto {
     method : AuthMethod
 }
 
-export class CheckOtp {
+export class CheckOtpDto {
     @ApiProperty()
     @IsString()
     @Length(5,5)
