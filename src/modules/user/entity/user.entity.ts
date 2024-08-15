@@ -5,6 +5,8 @@ import { OtpEntity } from "./otp.entity";
 import { ProfileEntity } from "./profile.entity";
 import { BlogEntity } from "src/modules/blog/entity/blog.entity";
 import { BlogLikeEntity } from "src/modules/blog/entity/like.entity";
+import { BlogBookMarkEntity } from "src/modules/blog/entity/book-mark.entity";
+import { BlogCommentEntity } from "src/modules/blog/entity/comment.entity";
 
 @Entity(EntityNames.User)
 export class UserEntity extends BaseEntity {
@@ -57,5 +59,10 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => BlogLikeEntity, like => like.user)
     blogLikes : BlogLikeEntity[]
-    
+
+    @OneToMany(() => BlogBookMarkEntity, blog => blog.user)
+    blogBookMark : BlogBookMarkEntity[]
+
+    @OneToMany(() => BlogCommentEntity, comment => comment.user)
+    blogComments : BlogCommentEntity[]
 }

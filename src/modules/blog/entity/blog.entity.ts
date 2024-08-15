@@ -4,6 +4,8 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany } from "typeorm"
 import { BlogStatus } from "../enums/status.enum";
 import { UserEntity } from "src/modules/user/entity/user.entity";
 import { BlogLikeEntity } from "./like.entity";
+import { BlogBookMarkEntity } from "./book-mark.entity";
+import { BlogCommentEntity } from "./comment.entity";
 
 @Entity(EntityNames.Blog)
 export class BlogEntity extends BaseEntity {
@@ -30,6 +32,12 @@ export class BlogEntity extends BaseEntity {
 
     @OneToMany(() => BlogLikeEntity, blogLike => blogLike.blog)
     blogLikes : BlogLikeEntity[]
+
+    @OneToMany(() => BlogBookMarkEntity, blog => blog.blog)
+    bookMarks : BlogBookMarkEntity[]
+
+    @OneToMany(() => BlogCommentEntity, comment => comment.blog)
+    comments : BlogCommentEntity[]
 
     @CreateDateColumn()
     updatedAt : Date
