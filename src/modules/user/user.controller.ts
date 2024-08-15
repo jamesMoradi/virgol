@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch, Post, Put, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ChangeEmailDto, ChangePhoneDto, ProfileDto } from './dto/profile.dto';
+import { ChangeEmailDto, ChangePhoneDto, ChangeUsernameDto, ProfileDto } from './dto/profile.dto';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { SwaggerConsumees } from 'src/common/types/enums/swagger-consumes.enum';
 import { multerConfig } from 'src/config/multer.config';
@@ -57,6 +57,11 @@ export class UserController {
   @Post('/verify-phone-otp')
   verifyPhone(@Body() checkOtpDto : CheckOtpDto) {
     return this.userService.verifyPhone(checkOtpDto.code)
+  }
+
+  @Post('/change-username')
+  changeUsername(@Body() usernameDto : ChangeUsernameDto, @Res() res : Response){
+    return this.userService.changeUsername(usernameDto.username)
   }
 
 }

@@ -162,7 +162,7 @@ export class UserService {
             token
         }
     } 
-
+ 
     async verifyPhone(code : string){
         const {id: userId, newPhone} = this.req.user
         const token = this.req.cookies?.[CookieKeys.PhoneOtp]
@@ -182,6 +182,24 @@ export class UserService {
             newPhone : null
         })
 
+        return {
+            message : PublicMessage.Updated
+        }
+    }
+
+    async changeUsername(username : string){
+        const {id} = this.req.user
+        const user = await this.userRepository.findOneBy({username})
+
+        if (user && user.id !== id) {
+            throw new ConflictException(ConflictMessage.Phone)
+        } else if(user.id === id) {
+            return {
+                message : PublicMessage.Updated
+            }
+        }
+
+        await this.userRepository.update({id}, {newUsername : username})
         return {
             message : PublicMessage.Updated
         }

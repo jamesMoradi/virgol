@@ -46,3 +46,10 @@ export class ChangePhoneDto {
    @IsMobilePhone('fa-IR', {}, {message : ValidationMessage.InvalidPhone})
    phone : string
 }
+
+export class ChangeUsernameDto {
+   @ApiProperty()
+   @IsString()
+   @Length(3, 100)
+   username : string
+}

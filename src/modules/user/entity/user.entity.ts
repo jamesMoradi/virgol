@@ -9,6 +9,9 @@ export class UserEntity extends BaseEntity {
     @Column({unique : true, nullable : true})
     username : string
 
+    @Column({unique : true, nullable : true})
+    newUsername : string
+
     @Column({unique : true})
     phone : string
 
