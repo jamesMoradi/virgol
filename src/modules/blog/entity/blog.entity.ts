@@ -30,6 +30,12 @@ export class BlogEntity extends BaseEntity {
     @Column({default : BlogStatus.Draft})
     status : string
 
+    @Column({unique : true})
+    slug : string
+
+    @Column()
+    timeForStudy : number
+
     @OneToMany(() => BlogLikeEntity, blogLike => blogLike.blog)
     blogLikes : BlogLikeEntity[]
 

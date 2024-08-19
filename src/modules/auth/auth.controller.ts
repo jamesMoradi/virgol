@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { AuthDto, CheckOtp } from './dto/auth.dto';
+import { AuthDto, CheckOtpDto } from './dto/auth.dto';
 import { SwaggerConsumees } from 'src/common/types/enums/swagger-consumes.enum';
 import { Request, Response } from 'express';
 import { AuthGuard } from './guards/auth.guard';
@@ -19,7 +19,7 @@ export class AuthController {
 
   @Post('ceck-otp')
   @ApiConsumes(SwaggerConsumees.UrlEncoded, SwaggerConsumees.Json)
-  checkOtp(@Body() checkOtp : CheckOtp) {
+  checkOtp(@Body() checkOtp : CheckOtpDto) {
     return this.authService.checkOtp(checkOtp.code)
   }
 
