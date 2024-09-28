@@ -33,6 +33,8 @@ export enum PublicMessage {
     Deleted="deleted suuccessfully",
     Updated="updated suuccessfully",
     Inserted="inserted suuccessfully",
+    Liked="blog liked",
+    DisLiked="blog disliked"
 }
 
 export enum ConflictMessage {

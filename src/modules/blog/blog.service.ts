@@ -1,19 +1,20 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere } from 'typeorm';
-import { BlogEntity } from './entity/blog.entity';
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { BlogEntity } from "./entity/blog.entity";
 import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
-import { BlogStatus } from './enums/status.enum';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+import { BlogStatus } from "./enums/status.enum";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/types/enums/message.enum";
-import { createSlug, randomId } from 'src/common/utils/function.util';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
+import { createSlug, randomId } from "src/common/utils/function.util";
+import { PaginationDto } from "src/common/dtos/pagination.dto";
+import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { isArray } from "class-validator";
 import { CategoryService } from "../category/category.service";
 import { BlogCategoryEntity } from "./entity/blog-category.entity";
 import { EntityNames } from "../../common/types/enums/entity.enum";
+import { BlogLikeEntity } from "./entity/like.entity";
 
 @Injectable({ scope : Scope.REQUEST})
 export class BlogService {
@@ -22,6 +23,8 @@ export class BlogService {
         private readonly blogRepository : Repository<BlogEntity>,
         @InjectRepository(BlogCategoryEntity)
         private readonly blogCategoryRepository : Repository<BlogCategoryEntity>,
+        @InjectRepository(BlogLikeEntity)
+        private readonly blogLikeRepository : Repository<BlogLikeEntity>,
         @Inject(REQUEST) private readonly req : Request,
         private readonly categoryService : CategoryService
     ){}
@@ -116,8 +119,11 @@ export class BlogService {
         const [blogs, count] = await this.blogRepository.createQueryBuilder(EntityNames.Blog)
           .leftJoin('blog.categories', "categories")
           .leftJoin('categories.category', "category")
-          .addSelect(['categories.id', 'categories.title'])
+          .leftJoin('blog.author', 'author')
+          .leftJoin('author.profile', 'profile')
+          .addSelect(['categories.id', 'categories.title', 'author.username', 'author.id', 'profile.nickName'])
           .where(where,{category, search})
+          .loadRelationCountAndMap('blog.likes', 'blog.likes')
           .orderBy('blog.id', 'DESC')
           .skip(skip)
           .take(limit)
@@ -179,6 +185,23 @@ export class BlogService {
 
         return {
             message : PublicMessage.Updated
+        }
+    }
+
+    async likeToggle(blogId : number) {
+        const { id : userId } = this.req.user
+        const blog = await this.checkExistsBlogById(blogId)
+        let message = PublicMessage.Liked
+        const isLiked = await this.blogLikeRepository.findOneBy({userId, blogId})
+        if (isLiked){
+            await this.blogLikeRepository.delete({id : isLiked.id})
+            message = PublicMessage.DisLiked
+        } else {
+            await this.blogLikeRepository.insert({blogId, userId})
+        }
+
+        return {
+            message
         }
     }
 }
