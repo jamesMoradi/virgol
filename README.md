@@ -25,6 +25,11 @@
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+<p>
+This project is a sample of a blog website. Here user can register, create blog, add comment and also search
+for other blogs. It's possible to search title, content, and category.
+Database used for this project is postgresql.
+</p>
 
 ## Installation
 
