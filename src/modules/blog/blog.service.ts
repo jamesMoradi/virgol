@@ -1,18 +1,19 @@
-import { BadRequestException, Inject, Injectable, Scope } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { BlogEntity } from './entity/blog.entity';
-import { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
 import { BlogStatus } from './enums/status.enum';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { BadRequestMessage, PublicMessage } from "src/common/types/enums/message.enum";
+import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/types/enums/message.enum";
 import { createSlug, randomId } from 'src/common/utils/function.util';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
 import { isArray } from "class-validator";
 import { CategoryService } from "../category/category.service";
 import { BlogCategoryEntity } from "./entity/blog-category.entity";
+import { EntityNames } from "../../common/types/enums/entity.enum";
 
 @Injectable({ scope : Scope.REQUEST})
 export class BlogService {
@@ -20,7 +21,7 @@ export class BlogService {
         @InjectRepository(BlogEntity)
         private readonly blogRepository : Repository<BlogEntity>,
         @InjectRepository(BlogCategoryEntity)
-        private readonly BlogCategoryRepository : Repository<BlogCategoryEntity>,
+        private readonly blogCategoryRepository : Repository<BlogCategoryEntity>,
         @Inject(REQUEST) private readonly req : Request,
         private readonly categoryService : CategoryService
     ){}
@@ -68,10 +69,16 @@ export class BlogService {
 
     private async checkBlogBySlug(slug : string) {
         const blog = await this.blogRepository.findOneBy({slug})
-        return !!blog 
+        return blog
     }
-    
-    getMyBlogs() {
+
+    private async checkExistsBlogById(id : number){
+        const blog = await this.blogRepository.findOneBy({id})
+        if (!blog) throw new NotFoundException(NotFoundMessage.NotFoundPost)
+        return blog
+    }
+
+    async getMyBlogs() {
         const {id} = this.req.user
         return this.blogRepository.find({
             where : {
@@ -83,42 +90,95 @@ export class BlogService {
         })
     }
 
+    async delete(id : number){
+        const blog = await this.checkExistsBlogById(id)
+        await this.blogRepository.delete({id})
+
+        return {
+            message : PublicMessage.Deleted
+        }
+    }
+
     async blogList(paginationDto : PaginationDto, filterDto : FilterBlogDto) {
         const {limit, page, skip} = paginationSolver(paginationDto)
-        const {category} = FilterBlogDto
-        let where: FindOptionsWhere<BlogEntity> = {};
+        let {category, search} = filterDto
+        let where:string = '';
         if (category){
-            where['categories'] = {
-                category : {
-                    title : category
-                }
-            }
+            category = category.toLowerCase()
+            if (where.length > 0) where +=' AND '
+            where += 'category.title = LOWER(:category)'
         }
-        const [blogs, count] = await this.blogRepository.findAndCount({
-            relations : {
-                categories : {
-                    category : true
-                }
-            },
-            select : {
-                categories : {
-                    categoryId : true,
-                    category : {
-                        id : true,
-                        title : true
-                    }
-                }
-            },
-            where,
-            order : {
-                id : 'DESC'
-            },
-            skip,
-            take : limit
-        })
+        if (search){
+            if (where.length > 0) where +=' AND '
+            search = `%${search.toLowerCase()}%`
+            where += 'LOWER(CONCAT(blog.title, blog.description, blog.content)) ILIKE :search'
+        }
+        const [blogs, count] = await this.blogRepository.createQueryBuilder(EntityNames.Blog)
+          .leftJoin('blog.categories', "categories")
+          .leftJoin('categories.category', "category")
+          .addSelect(['categories.id', 'categories.title'])
+          .where(where,{category, search})
+          .orderBy('blog.id', 'DESC')
+          .skip(skip)
+          .take(limit)
+          .getManyAndCount()
+
         return {
             pagination : paginationGenerator(count, page, limit),
             blogs
+        }
+    }
+
+    async update(id : number, blogDto : UpdateBlogDto){
+        const user = this.req.user
+        let {title, slug, content, description, image, timeForStudy, categories} = blogDto
+        const blog = await this.checkExistsBlogById(id)
+
+        if (!isArray(categories) && typeof categories === "string"){
+            categories = categories.split(",")
+        } else if (!isArray(categories)){
+            throw new BadRequestException(BadRequestMessage.InvalidCategories)
+        }
+
+        let slugData = blogDto.slug = slug ?? title
+        blogDto.slug = createSlug(slugData)
+
+        let slugData = null
+        if (title) {
+            slugData = title
+            slug = createSlug(slugData)
+            blog.title = title
+        }
+        if (slug) slugData = slug
+        if (slugData) {
+            const isExistSlug = await this.checkBlogBySlug(slug)
+            if (isExistSlug && isExistSlug.id !== id) {
+                slug += `-${randomId()}`
+            }
+            blog.slug = slug
+        }
+        if (description) blog.description = description
+        if (content) blog.content = content
+        if (image) blog.title = image
+        if (timeForStudy) blog.timeForStudy = timeForStudy
+        await this.blogRepository.save(blog)
+
+        if (categories && isArray(categories) && categories.length > 0)
+            await this.blogCategoryRepository.delete({blogId : blog.id})
+
+        for (const categoryTitle of categories) {
+            let category = await this.categoryService.findOneByTitle(categoryTitle)
+            if (!category){
+                category = await this.categoryService.insertByTitle(categoryTitle)
+            }
+            await this.BlogCategoryRepository.insert({
+                blogId : blog.id,
+                categoryId : category.id
+            })
+        }
+
+        return {
+            message : PublicMessage.Updated
         }
     }
 }

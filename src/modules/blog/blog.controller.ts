@@ -1,14 +1,12 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { BlogService } from './blog.service';
-import { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { SwaggerConsumees } from 'src/common/types/enums/swagger-consumes.enum';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { Pagination } from 'src/common/decorator/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { SkipAuth } from 'src/common/decorator/skip-auth.decorator';
-import { filterBlog } from "../../common/decorator/filter.decoraotr";
-
 @Controller('blog')
 @ApiTags('Blog')
 @ApiBearerAuth("Authorization")
@@ -33,5 +31,16 @@ export class BlogController {
   @FilterBlog()
   getAllBlog(@Query() paginationDto : PaginationDto, @Query() filterDto : FilterBlogDto){
     return this.blogService.blogList(paginationDto, filterDto)
+  }
+
+  @Delete('/:id')
+  deleteOneBlog(@Param('id', ParseIntPipe) id : number ){
+    return this.blogService.delete(id)
+  }
+
+  @Put('/:id')
+  @ApiConsumes(SwaggerConsumees.UrlEncoded, SwaggerConsumees.Json)
+  updateABlog(@Param('id', ParseIntPipe) id : number, @Body() blogDto : UpdateBlogDto){
+    return this.blogService.update(id, blogDto)
   }
 }
