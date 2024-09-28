@@ -5,10 +5,10 @@ namespace NodeJS {
         
         //database
         DB_PORT : Number
-        DB_NAME : String
-        DB_USERNAME : String
-        DB_PASSWORD : String
-        DB_HOST : String
+        DB_NAME : string
+        DB_USERNAME : string
+        DB_PASSWORD : string
+        DB_HOST : string
     
         //secrets
         COOKIE_SECRET : string

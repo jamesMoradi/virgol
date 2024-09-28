@@ -9,6 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const {PORT, COOKIE_SECRET} = process.env
 
+  app.setGlobalPrefix('api')
   app.useStaticAssets('public')
   app.use(cookieParser(COOKIE_SECRET))
   app.useGlobalPipes(new ValidationPipe())

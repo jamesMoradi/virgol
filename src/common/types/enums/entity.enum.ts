@@ -4,7 +4,7 @@ export enum EntityNames {
     Otp="otp",
     Category="category",
     Blog="blog",
-    BlogCategory="blog_category",
+    BlogCategorys="blog_category",
     BlogBookMark="blog_book_mark",
     BlogLikes="blog_like",
     BlogComments="blog_comment"

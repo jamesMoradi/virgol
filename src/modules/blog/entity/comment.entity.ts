@@ -33,6 +33,4 @@ export class BlogCommentEntity extends BaseEntity {
     @OneToMany(() => BlogCommentEntity, comment => comment.parent)
     @JoinColumn({name : 'parent'})
     children : BlogCommentEntity[]
-
-
 }

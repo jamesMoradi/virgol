@@ -6,6 +6,7 @@ import { UserEntity } from "src/modules/user/entity/user.entity";
 import { BlogLikeEntity } from "./like.entity";
 import { BlogBookMarkEntity } from "./book-mark.entity";
 import { BlogCommentEntity } from "./comment.entity";
+import { BlogCategoryEntity } from "./blog-category.entity";
 
 @Entity(EntityNames.Blog)
 export class BlogEntity extends BaseEntity {
@@ -44,6 +45,9 @@ export class BlogEntity extends BaseEntity {
 
     @OneToMany(() => BlogCommentEntity, comment => comment.blog)
     comments : BlogCommentEntity[]
+
+    @OneToMany(() => BlogCategoryEntity, category => category.blog)
+    categories : BlogCategoryEntity[]
 
     @CreateDateColumn()
     updatedAt : Date
