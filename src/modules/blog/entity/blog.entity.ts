@@ -41,7 +41,7 @@ export class BlogEntity extends BaseEntity {
     blogLikes : BlogLikeEntity[]
 
     @OneToMany(() => BlogBookMarkEntity, blog => blog.blog)
-    bookMarks : BlogBookMarkEntity[]
+    bookmarks : BlogBookMarkEntity[]
 
     @OneToMany(() => BlogCommentEntity, comment => comment.blog)
     comments : BlogCommentEntity[]

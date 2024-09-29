@@ -15,16 +15,15 @@ import { CategoryService } from "../category/category.service";
 import { BlogCategoryEntity } from "./entity/blog-category.entity";
 import { EntityNames } from "../../common/types/enums/entity.enum";
 import { BlogLikeEntity } from "./entity/like.entity";
+import { BlogBookMarkEntity } from "./entity/book-mark.entity";
 
 @Injectable({ scope : Scope.REQUEST})
 export class BlogService {
     constructor(
-        @InjectRepository(BlogEntity)
-        private readonly blogRepository : Repository<BlogEntity>,
-        @InjectRepository(BlogCategoryEntity)
-        private readonly blogCategoryRepository : Repository<BlogCategoryEntity>,
-        @InjectRepository(BlogLikeEntity)
-        private readonly blogLikeRepository : Repository<BlogLikeEntity>,
+        @InjectRepository(BlogEntity) private readonly blogRepository : Repository<BlogEntity>,
+        @InjectRepository(BlogCategoryEntity) private readonly blogCategoryRepository : Repository<BlogCategoryEntity>,
+        @InjectRepository(BlogLikeEntity) private readonly blogLikeRepository : Repository<BlogLikeEntity>,
+        @InjectRepository(BlogBookMarkEntity) private readonly bookmarkRepository : Repository<BlogBookMarkEntity>,
         @Inject(REQUEST) private readonly req : Request,
         private readonly categoryService : CategoryService
     ){}
@@ -124,6 +123,7 @@ export class BlogService {
           .addSelect(['categories.id', 'categories.title', 'author.username', 'author.id', 'profile.nickName'])
           .where(where,{category, search})
           .loadRelationCountAndMap('blog.likes', 'blog.likes')
+          .loadRelationCountAndMap('blog.bookmarks', 'blog.bookmarks')
           .orderBy('blog.id', 'DESC')
           .skip(skip)
           .take(limit)
@@ -198,6 +198,23 @@ export class BlogService {
             message = PublicMessage.DisLiked
         } else {
             await this.blogLikeRepository.insert({blogId, userId})
+        }
+
+        return {
+            message
+        }
+    }
+
+    async bookMarkToggle(blogId : number) {
+        const { id : userId } = this.req.user
+        const blog = await this.checkExistsBlogById(blogId)
+        let message = PublicMessage.Bookmarked
+        const isBookmarked = await this.bookmarkRepository.findOneBy({userId, blogId})
+        if (isBookmarked){
+            await this.bookmarkRepository.delete({id : isBookmarked.id})
+            message = PublicMessage.UnBookmarked
+        } else {
+            await this.bookmarkRepository.insert({blogId, userId})
         }
 
         return {
