@@ -61,7 +61,7 @@ export class BlogService {
             if (!category){
                 category = await this.categoryService.insertByTitle(categoryTitle)
             }
-            await this.BlogCategoryRepository.insert({
+            await this.blogCategoryRepository.insert({
                 blogId : blog.id,
                 categoryId : category.id
             })
@@ -145,8 +145,8 @@ export class BlogService {
             throw new BadRequestException(BadRequestMessage.InvalidCategories)
         }
 
-        let slugData = blogDto.slug = slug ?? title
-        blogDto.slug = createSlug(slugData)
+        let sslugData = blogDto.slug = slug ?? title
+        blogDto.slug = createSlug(sslugData)
 
         let slugData = null
         if (title) {
@@ -176,7 +176,7 @@ export class BlogService {
             if (!category){
                 category = await this.categoryService.insertByTitle(categoryTitle)
             }
-            await this.BlogCategoryRepository.insert({
+            await this.blogCategoryRepository.insert({
                 blogId : blog.id,
                 categoryId : category.id
             })
@@ -228,8 +228,13 @@ export class BlogService {
 
         if (!blog) throw new NotFoundException(NotFoundMessage.NotFoundPost)
         const commentsData = await this.commentService.findCommentsOfBlog(blog.id, paginationDto)
-        const isLiked = await this.blogLikeRepository.findOneBy({userId, blogId : blog.id})
-        const isBookmarked = await this.bookmarkRepository.findOneBy({userId, blogId : blog.id})
+        let isLiked = false
+        let isBookmarked = false
+        
+        if(userId && !isNaN(userId) && userId > 0){
+            isLiked = !!(await this.blogLikeRepository.findOneBy({userId, blogId : blog.id}))
+            isBookmarked = !!(await this.bookmarkRepository.findOneBy({userId, blogId : blog.id})) 
+        }
 
         return {
             blog,
