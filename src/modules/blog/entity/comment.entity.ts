@@ -19,12 +19,12 @@ export class BlogCommentEntity extends BaseEntity {
     blog : BlogEntity
 
     @Column()
-    userIdId : number
+    userId : number
 
     @ManyToOne(() => UserEntity, user => user.blogComments, {onDelete : 'CASCADE'})
     user : UserEntity
 
-    @Column()
+    @Column({nullable : true})
     parentId : number
 
     @ManyToOne(() => BlogCommentEntity, comment => comment.children, {onDelete : 'CASCADE'})

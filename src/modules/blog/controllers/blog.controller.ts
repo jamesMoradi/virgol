@@ -1,12 +1,14 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from "@nestjs/common";
-import { BlogService } from './blog.service';
-import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
+import { BlogService } from '../services/blog.service';
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "../dto/blog.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { SwaggerConsumees } from 'src/common/types/enums/swagger-consumes.enum';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AuthGuard } from '../../auth/guards/auth.guard';
 import { Pagination } from 'src/common/decorator/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { SkipAuth } from 'src/common/decorator/skip-auth.decorator';
+import { FilterBlog } from "../../../common/decorator/filter.decoraotr";
+
 @Controller('blog')
 @ApiTags('Blog')
 @ApiBearerAuth("Authorization")
@@ -52,5 +54,11 @@ export class BlogController {
   @Get('/bookmark/:id')
   bookmarkToggle(@Param('id', ParseIntPipe) id : number){
     return this.blogService.bookMarkToggle(id)
+  }
+
+  @Get('/by-slug/:slug')
+  @Pagination()
+  findOneBySlug(@Query('slug') slug : string, @Query() paginationDtp : PaginationDto){
+    return this.blogService.findOneBySlug(slug, paginationDtp)
   }
 }

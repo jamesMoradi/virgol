@@ -2,7 +2,9 @@ export enum BadRequestMessage {
     InvalidLoginData="sent data for login are not valid",
     InvalidRegisterData="sent data for registeration are not valid",
     SomethingWentWrong="something went wrong. try again later",
-    InvalidCategories="add correct categories"
+    InvalidCategories="add correct categories",
+    AlreadyAccepted="this is already accepted",
+    AlreadyRejected="this is already rejected"
 }
 
 export enum AuthMessage {

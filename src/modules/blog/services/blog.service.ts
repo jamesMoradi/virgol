@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { BlogEntity } from "./entity/blog.entity";
-import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
-import { BlogStatus } from "./enums/status.enum";
+import { BlogEntity } from "../entity/blog.entity";
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "../dto/blog.dto";
+import { BlogStatus } from "../enums/status.enum";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/types/enums/message.enum";
@@ -11,11 +11,12 @@ import { createSlug, randomId } from "src/common/utils/function.util";
 import { PaginationDto } from "src/common/dtos/pagination.dto";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { isArray } from "class-validator";
-import { CategoryService } from "../category/category.service";
-import { BlogCategoryEntity } from "./entity/blog-category.entity";
-import { EntityNames } from "../../common/types/enums/entity.enum";
-import { BlogLikeEntity } from "./entity/like.entity";
-import { BlogBookMarkEntity } from "./entity/book-mark.entity";
+import { CategoryService } from "../../category/category.service";
+import { BlogCategoryEntity } from "../entity/blog-category.entity";
+import { EntityNames } from "../../../common/types/enums/entity.enum";
+import { BlogLikeEntity } from "../entity/like.entity";
+import { BlogBookMarkEntity } from "../entity/book-mark.entity";
+import { CommentService } from "./comment.service";
 
 @Injectable({ scope : Scope.REQUEST})
 export class BlogService {
@@ -25,7 +26,8 @@ export class BlogService {
         @InjectRepository(BlogLikeEntity) private readonly blogLikeRepository : Repository<BlogLikeEntity>,
         @InjectRepository(BlogBookMarkEntity) private readonly bookmarkRepository : Repository<BlogBookMarkEntity>,
         @Inject(REQUEST) private readonly req : Request,
-        private readonly categoryService : CategoryService
+        private readonly categoryService : CategoryService,
+        private readonly commentService : CommentService
     ){}
 
     async create(blogDto : CreateBlogDto){
@@ -68,18 +70,15 @@ export class BlogService {
             message : PublicMessage.Created
         }
     }
-
     private async checkBlogBySlug(slug : string) {
         const blog = await this.blogRepository.findOneBy({slug})
         return blog
     }
-
     private async checkExistsBlogById(id : number){
         const blog = await this.blogRepository.findOneBy({id})
         if (!blog) throw new NotFoundException(NotFoundMessage.NotFoundPost)
         return blog
     }
-
     async getMyBlogs() {
         const {id} = this.req.user
         return this.blogRepository.find({
@@ -91,7 +90,6 @@ export class BlogService {
             }
         })
     }
-
     async delete(id : number){
         const blog = await this.checkExistsBlogById(id)
         await this.blogRepository.delete({id})
@@ -100,7 +98,6 @@ export class BlogService {
             message : PublicMessage.Deleted
         }
     }
-
     async blogList(paginationDto : PaginationDto, filterDto : FilterBlogDto) {
         const {limit, page, skip} = paginationSolver(paginationDto)
         let {category, search} = filterDto
@@ -124,6 +121,9 @@ export class BlogService {
           .where(where,{category, search})
           .loadRelationCountAndMap('blog.likes', 'blog.likes')
           .loadRelationCountAndMap('blog.bookmarks', 'blog.bookmarks')
+          .loadRelationCountAndMap('blog.comments', 'blog.comments', 'comment', qb =>
+              qb.where('comments.accepted = :accepted' , {accepted : true})
+          )
           .orderBy('blog.id', 'DESC')
           .skip(skip)
           .take(limit)
@@ -134,7 +134,6 @@ export class BlogService {
             blogs
         }
     }
-
     async update(id : number, blogDto : UpdateBlogDto){
         const user = this.req.user
         let {title, slug, content, description, image, timeForStudy, categories} = blogDto
@@ -187,7 +186,6 @@ export class BlogService {
             message : PublicMessage.Updated
         }
     }
-
     async likeToggle(blogId : number) {
         const { id : userId } = this.req.user
         const blog = await this.checkExistsBlogById(blogId)
@@ -204,7 +202,6 @@ export class BlogService {
             message
         }
     }
-
     async bookMarkToggle(blogId : number) {
         const { id : userId } = this.req.user
         const blog = await this.checkExistsBlogById(blogId)
@@ -220,5 +217,26 @@ export class BlogService {
         return {
             message
         }
+    }
+    async findOneBySlug(slug : string, paginationDto : PaginationDto) {
+        const userId = this.req?.user?.id
+        const blog = await this.blogRepository.createQueryBuilder(EntityNames.Blog)
+          .where({slug })
+          .loadRelationCountAndMap('blog.likes', 'blog.likes')
+          .loadRelationCountAndMap('blog.bookmarks', 'blog.bookmarks')
+          .getOne()
+
+        if (!blog) throw new NotFoundException(NotFoundMessage.NotFoundPost)
+        const commentsData = await this.commentService.findCommentsOfBlog(blog.id, paginationDto)
+        const isLiked = await this.blogLikeRepository.findOneBy({userId, blogId : blog.id})
+        const isBookmarked = await this.bookmarkRepository.findOneBy({userId, blogId : blog.id})
+
+        return {
+            blog,
+            isLiked,
+            isBookmarked,
+            commentsData
+        }
+
     }
 }
