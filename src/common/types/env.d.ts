@@ -2,6 +2,7 @@ namespace NodeJS {
     interface ProcessEnv {
         //application
         PORT : number
+        DOMAIN : string
         
         //database
         DB_PORT : Number

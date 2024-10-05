@@ -8,5 +8,5 @@ export class ImagesDto {
     alt : string
 
     @ApiProperty({format : 'binary'})
-    location : string
+    name : string
 }

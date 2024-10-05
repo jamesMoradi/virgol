@@ -1,7 +1,7 @@
 import { BaseEntity } from "src/common/abstract/base.entity";
 import { EntityNames } from "src/common/types/enums/entity.enum";
 import { UserEntity } from "src/modules/user/entity/user.entity";
-import { Column, Entity, ManyToOne } from "typeorm";
+import { AfterLoad, Column, Entity, ManyToOne } from "typeorm";
 
 @Entity(EntityNames.Images)
 export class ImagesEntity extends BaseEntity{
@@ -19,4 +19,9 @@ export class ImagesEntity extends BaseEntity{
 
     @ManyToOne(() => UserEntity, user => user.images, {onDelete : 'CASCADE'})
     user : UserEntity
+
+    @AfterLoad()
+    map(){
+        this.location = `${process.env.DOMAIN}/${this.location}`
+    }
 }
