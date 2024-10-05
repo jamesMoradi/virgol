@@ -7,12 +7,12 @@ import { AuthGuard } from '../../auth/guards/auth.guard';
 import { Pagination } from 'src/common/decorator/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { SkipAuth } from 'src/common/decorator/skip-auth.decorator';
-import { FilterBlog } from "../../../common/decorator/filter.decoraotr";
+import { FilterBlog } from "../../../common/decorator/filter.decorator";
+import { AuthDecorator } from "src/common/decorator/Auth.decorator";
 
 @Controller('blog')
 @ApiTags('Blog')
-@ApiBearerAuth("Authorization")
-@UseGuards(AuthGuard)
+@AuthDecorator()
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 

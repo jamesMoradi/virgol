@@ -2,6 +2,7 @@ import { Request } from "express";
 import { mkdirSync } from "fs";
 import { extname, join } from "path";
 import { ValidationMessage } from "../types/enums/message.enum";
+import { diskStorage } from "multer";
 
 export type CallbackDestination = (error : Error, destination : string) => void
 export type CallbackFileName = (error : Error, fileName : string) => void
@@ -13,6 +14,13 @@ export const multerDestination = (filedName : string) => {
         mkdirSync(path, {recursive : true})
         callback(null, path)
     }
+}
+
+export const multerStorage = (folderName : string) => {
+    return diskStorage({
+        destination : multerDestination(folderName),
+        filename : multerFileName
+    })
 }
 
 export const multerFileName = (req: Request, file : MulterFile, callback : CallbackFileName) : void => {
