@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { ImagesModule } from './modules/images/images.module';
+import { CustomHttpModule } from './modules/http/http.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { ImagesModule } from './modules/images/images.module';
     UserModule,
     CategoryModule,
     BlogModule,
-    ImagesModule
+    ImagesModule,
+    CustomHttpModule
   ]
 })
 export class AppModule {}

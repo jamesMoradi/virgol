@@ -16,6 +16,7 @@ import { CookieKeys } from 'src/common/types/enums/cookie.enum';
 import { Result } from './types/result';
 import { REQUEST } from '@nestjs/core';
 import { tokenOption } from 'src/common/utils/cookie.util';
+import { SMSService } from '../http/SMS.service';
 
 @Injectable({scope : Scope.REQUEST})
 export class AuthService {
@@ -30,6 +31,7 @@ export class AuthService {
         private readonly otpRepository : Repository<OtpEntity>,
 
         private readonly tokenService : TokenServices,
+        private readonly smsService : SMSService,
 
         @Inject(REQUEST) 
         private  readonly request : Request 
@@ -41,10 +43,12 @@ export class AuthService {
         switch (type) {
             case AuthType.Login:
                 result = await this.login(method, username)
+                await this.sendOtp(method,username,result.code)
                 return this.sendResponse(res, result)
 
             case AuthType.Register:
                 result = await this.register(method, username)
+                await this.sendOtp(method,username,result.code)
                 return this.sendResponse(res, result)
 
             default:
@@ -100,11 +104,9 @@ export class AuthService {
     }
 
     private async sendResponse(res : Response, result : Result) {
-        const {token, code} = result
+        const {token} = result
         res.cookie(CookieKeys.Otp, token, tokenOption())
-        res.json({
-            code : code
-        })
+        
     }
 
     async checkOtp(code : string){
@@ -196,5 +198,13 @@ export class AuthService {
         }
         
         return user
+    }
+
+    private async sendOtp (method : AuthMethod, username : string, code : string){
+        if(method === AuthMethod.Email) {
+            //send email logic that is not exist yet
+        } else if(method === AuthMethod.Phone){
+            await this.smsService.sendVerificationSMS(username, code)
+        } 
     }
 }
