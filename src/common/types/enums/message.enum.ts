@@ -38,7 +38,9 @@ export enum PublicMessage {
     Liked="blog liked",
     DisLiked="blog disliked",
     Bookmarked="saved",
-    UnBookmarked="unsaved"
+    UnBookmarked="unsaved",
+    Followed="user followed",
+    Unfollowed="user unfollowed"
 }
 
 export enum ConflictMessage {

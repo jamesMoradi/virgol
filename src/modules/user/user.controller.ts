@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Patch, Post, Put, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ChangeEmailDto, ChangePhoneDto, ChangeUsernameDto, ProfileDto } from './dto/profile.dto';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { SwaggerConsumees } from 'src/common/types/enums/swagger-consumes.enum';
 import { multerConfig } from 'src/config/multer.config';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -13,6 +13,8 @@ import { tokenOption } from 'src/common/utils/cookie.util';
 import { PublicMessage } from 'src/common/types/enums/message.enum';
 import { CheckOtpDto } from '../auth/dto/auth.dto';
 import { AuthDecorator } from 'src/common/decorator/auth.decorator';
+import { Pagination } from 'src/common/decorator/pagination.decorator';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('user')
 @AuthDecorator()
@@ -64,4 +66,21 @@ export class UserController {
     return this.userService.changeUsername(usernameDto.username)
   }
 
+  @Get('/follow/:id')
+  @ApiParam({name : 'user'})
+  follow(@Param('id', ParseIntPipe)id : number){
+    return this.userService.followToggle(id)
+  }
+
+  @Get('/get-followers')
+  @Pagination()
+  getFollowers(@Query() paginationDto : PaginationDto){
+    return this.userService.getFollowers(paginationDto)
+  }
+
+  @Get('/get-followings')
+  @Pagination()
+  getFollowings(@Query() paginationDto : PaginationDto){
+    return this.userService.getFollowings(paginationDto)
+  }
 }

@@ -7,11 +7,12 @@ import { UserEntity } from './entity/user.entity';
 import { OtpEntity } from './entity/otp.entity';
 import { AuthMethod } from '../auth/enums/method.enum';
 import { AuthModule } from '../auth/auth.module';
+import { FollowEntity } from './entity/follow.entity';
 
 @Module({
   imports : [
     AuthModule,
-    TypeOrmModule.forFeature([UserEntity, OtpEntity, ProfileEntity])
+    TypeOrmModule.forFeature([UserEntity, OtpEntity, ProfileEntity, FollowEntity])
   ],
   controllers: [UserController],
   providers: [UserService],
