@@ -8,7 +8,7 @@ import { Pagination } from 'src/common/decorator/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { SkipAuth } from 'src/common/decorator/skip-auth.decorator';
 import { FilterBlog } from "../../../common/decorator/filter.decorator";
-import { AuthDecorator } from "src/common/decorator/Auth.decorator";
+import { AuthDecorator } from "src/common/decorator/auth.decorator";
 
 @Controller('blog')
 @ApiTags('Blog')

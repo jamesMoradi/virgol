@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Param, ParseIntPipe, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ImagesService } from "./images.service";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
-import { AuthDecorator } from "src/common/decorator/Auth.decorator";
+import { AuthDecorator } from "src/common/decorator/auth.decorator";
 import { ImagesDto } from "./dto/images.dto";
 import { UploadFile } from "src/common/interceptor/upload.interceptor";
 import { MulterFile } from "src/common/utils/multer.util";

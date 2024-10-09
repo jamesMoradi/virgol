@@ -8,6 +8,7 @@ import { BlogLikeEntity } from "src/modules/blog/entity/like.entity";
 import { BlogBookMarkEntity } from "src/modules/blog/entity/book-mark.entity";
 import { BlogCommentEntity } from "src/modules/blog/entity/comment.entity";
 import { ImagesEntity } from "src/modules/images/entity/images.entity";
+import { Roles } from "src/common/types/enums/role.enum";
 
 @Entity(EntityNames.User)
 export class UserEntity extends BaseEntity {
@@ -50,6 +51,9 @@ export class UserEntity extends BaseEntity {
 
     @Column({nullable : true})
     profileId : number
+
+    @Column({default : Roles.User})
+    role : string
 
     @OneToOne(() => ProfileEntity, profile => profile.user, {nullable : true})
     @JoinColumn({name : "profileId"})

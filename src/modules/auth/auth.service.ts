@@ -43,12 +43,12 @@ export class AuthService {
         switch (type) {
             case AuthType.Login:
                 result = await this.login(method, username)
-                await this.sendOtp(method,username,result.code)
+                //await this.sendOtp(method,username,result.code)
                 return this.sendResponse(res, result)
 
             case AuthType.Register:
                 result = await this.register(method, username)
-                await this.sendOtp(method,username,result.code)
+                //await this.sendOtp(method,username,result.code)
                 return this.sendResponse(res, result)
 
             default:
@@ -104,8 +104,11 @@ export class AuthService {
     }
 
     private async sendResponse(res : Response, result : Result) {
-        const {token} = result
+        const {token, code} = result
         res.cookie(CookieKeys.Otp, token, tokenOption())
+        res.json({
+            code
+        })
         
     }
 
